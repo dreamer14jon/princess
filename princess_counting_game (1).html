@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Princess Counting Game</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #ffe6f2, #fff7fb);
+      color: #6b2d5c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .game {
+      width: 100%;
+      max-width: 760px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+      padding: 24px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      margin-bottom: 18px;
+    }
+    .castle {
+      font-size: 4rem;
+      margin: 8px 0 16px;
+    }
+    .question {
+      font-size: 1.6rem;
+      margin: 16px 0;
+      font-weight: bold;
+    }
+    .items {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      min-height: 90px;
+      margin: 18px 0 24px;
+    }
+    .item {
+      font-size: 3rem;
+      background: #fff0f7;
+      border-radius: 18px;
+      width: 72px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .answers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 420px;
+      margin: 0 auto 18px;
+    }
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      background: #ffb6d9;
+      color: #5b214d;
+      font-weight: bold;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    button:hover { transform: scale(1.03); background: #ff9fce; }
+    button:active { transform: scale(0.98); }
+    .status {
+      font-size: 1.2rem;
+      min-height: 32px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .score {
+      font-size: 1.05rem;
+      margin-bottom: 14px;
+    }
+    .next-btn {
+      background: #d7b3ff;
+      margin-top: 8px;
+    }
+    .next-btn:hover {
+      background: #c79cff;
+    }
+    @media (max-width: 600px) {
+      .answers { grid-template-columns: repeat(2, 1fr); }
+      .item { width: 60px; height: 60px; font-size: 2.5rem; }
+      h1 { font-size: 1.7rem; }
+      .question { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <div class="castle">👑🏰✨</div>
+    <h1>Princess Counting Game</h1>
+    <div class="subtitle">Help the princess count her shiny treasures!</div>
+
+    <div class="score">Stars: <span id="score">0</span> ⭐</div>
+    <div class="question" id="question">How many crowns do you see?</div>
+    <div class="items" id="items"></div>
+    <div class="answers" id="answers"></div>
+    <div class="status" id="status"></div>
+    <button class="next-btn" id="nextBtn" style="display:none;">Next Round</button>
+  </div>
+
+  <script>
+    const itemChoices = [
+      { emoji: '👑', name: 'crowns' },
+      { emoji: '💎', name: 'gems' },
+      { emoji: '🪄', name: 'magic wands' },
+      { emoji: '🌸', name: 'flowers' },
+      { emoji: '🦄', name: 'unicorns' }
+    ];
+
+    let score = 0;
+    let correctAnswer = 0;
+
+    const scoreEl = document.getElementById('score');
+    const questionEl = document.getElementById('question');
+    const itemsEl = document.getElementById('items');
+    const answersEl = document.getElementById('answers');
+    const statusEl = document.getElementById('status');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function makeRound() {
+      statusEl.textContent = '';
+      nextBtn.style.display = 'none';
+      answersEl.innerHTML = '';
+      itemsEl.innerHTML = '';
+
+      const chosen = itemChoices[Math.floor(Math.random() * itemChoices.length)];
+      correctAnswer = Math.floor(Math.random() * 5) + 1; // 1 to 5
+      questionEl.textContent = `How many ${chosen.name} do you see?`;
+
+      for (let i = 0; i < correctAnswer; i++) {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = chosen.emoji;
+        itemsEl.appendChild(div);
+      }
+
+      const options = new Set([correctAnswer]);
+      while (options.size < 4) {
+        options.add(Math.floor(Math.random() * 5) + 1);
+      }
+
+      shuffle([...options]).forEach(num => {
+        const btn = document.createElement('button');
+        btn.textContent = num;
+        btn.addEventListener('click', () => checkAnswer(num));
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(num) {
+      const buttons = answersEl.querySelectorAll('button');
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (num === correctAnswer) {
+        score++;
+        scoreEl.textContent = score;
+        statusEl.textContent = 'Yay! That is correct! 🎉';
+      } else {
+        statusEl.textContent = `Good try! The answer is ${correctAnswer}. 💖`;
+      }
+
+      nextBtn.style.display = 'inline-block';
+    }
+
+    nextBtn.addEventListener('click', makeRound);
+
+    makeRound();
+  </script>
+</body>
+</html>
